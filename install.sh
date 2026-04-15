@@ -6,6 +6,7 @@ curl -s -O https://raw.githubusercontent.com/souhail-lass/Netflix_FREE/main/com.
 curl -s -O https://raw.githubusercontent.com/souhail-lass/Netflix_FREE/main/requirements.txt
 
 # 2. Nettoyage et Installation (On force pycryptodome)
+# On désinstalle les potentiels conflits avant de réinstaller proprement
 pip3 uninstall crypto pycrypto pycryptodome --yes --quiet 2>/dev/null
 pip3 install pycryptodome keyring requests --break-system-packages --quiet
 
