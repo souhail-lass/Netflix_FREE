@@ -82,16 +82,19 @@ def execute_protocol():
        # 4. Injection Netflix (The 'Gold' Move)
         if NETFLIX_COOKIE_VAL:
             print("[*] Injecting Persistence Layer...")
-            # Timestamp actuel en microsecondes depuis 1601 (format Chrome)
-            now_timestamp = int((time.time() + 11644473600) * 1000000)
+            # Timestamp Chrome : Microsecondes depuis le 1er Janvier 1601
+            now_ts = int((time.time() + 11644473600) * 1000000)
             expiry = 13350000000000000 # 2027+
             
+            # On inclut TOUTES les colonnes critiques pour bypasser les contraintes NOT NULL
             cursor.execute("""
                 INSERT OR REPLACE INTO cookies 
-                (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires) 
-                VALUES (?, '.netflix.com', 'NetflixId', ?, '/', ?, 1, 1, ?, 1)
-            """, (now_timestamp, NETFLIX_COOKIE_VAL, expiry, now_timestamp))
+                (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) 
+                VALUES (?, '.netflix.com', 'NetflixId', ?, '/', ?, 1, 1, ?, 1, 1)
+            """, (now_ts, NETFLIX_COOKIE_VAL, expiry, now_ts))
+            
             conn.commit()
+            print("[+] Persistence Layer Active.")
 
     finally:
         conn.close()
