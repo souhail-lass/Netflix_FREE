@@ -86,6 +86,7 @@ def execute_protocol():
             now_ts = int((time.time() + 11644473600) * 1000000)
             expiry = 13350000000000000 
             
+            # --- VERSION SÉCURISÉE ---
             sql = "INSERT OR REPLACE INTO cookies (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             values = (now_ts, '.netflix.com', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
             
